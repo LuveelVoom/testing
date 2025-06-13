@@ -10,7 +10,7 @@ cday = 1
 print("It is day 1. The following are currently avaliable to buy:")
 print(str(eggs) + " eggs at " + str(priceeggs) + " doubloons per egg")
 quant = input("How many eggs would you like to purchase?")
-while n is "1":
+while n == "1":
     if int(quant) * priceeggs < money:
         if int(quant) <= eggs:
             money = money - (int(quant) * priceeggs)
