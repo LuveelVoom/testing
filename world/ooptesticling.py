@@ -16,7 +16,7 @@ class doge:
         self.weight *= 2
         
     def transmute(self):
-        self.breed = random.choice(["GIGA ", "UBER ", "SUPER ", "MEGA ", "ULTIMATE ", "DOOM ", "FINAL ", "type 4 instead of 1,2,3 "])+ self.breed.upper() #magic ai bug fix ??? idfk what "upper" does but it works somehow
+        self.breed = random.choice(["GIGA ", "UBER ", "SUPER ", "MEGA ", "ULTIMATE ", "DOOM ", "FINAL ", "type 4 "])+ self.breed
     
     def pleasehelp(self):
         self.currentprint = ("weight: " + str(self.weight) + ", teeth: " + str(self.teeth) + ", breed: " + str(self.breed))
