@@ -32,7 +32,6 @@ map_edges = [
 ]
 
 
-
 def start():
     choosestart = list(range(len(city_names)))
     choosestart.remove(current)
@@ -49,27 +48,27 @@ def getoutgoing():
     for x in range(0,len(map_edges)): ### Giving vars meaningful names (not just x and y) will also help remember what's going on s mcould be map_index, or just index
         if map_edges[x][0] == current:
             destinations.append(map_edges[x][2]) 
-            edges.append(map_edges[x][1]) 
+            edges.append(map_edges[x]) 
     return destinations,edges
 
 def travel():
     ### Block comment!
     global current
-    act,destinations,mob = action() ### take_step()? -- the naming of functions is NOT trivial -- unless you comment everywhere it's the only way you can tell what's going on!
+    act,destinations,edge = action() ### take_step()? -- the naming of functions is NOT trivial -- unless you comment everywhere it's the only way you can tell what's going on!
     if act == "BACK":
         if len(backstack) > 0: 
             current = pops()
     elif city_names.index(act) in destinations:
-        if battle(mob) == 1:
-            print("You were victorious.")
+        status = battle(edge)
+        if status == 1:
             stack()
             current = city_names.index(act)
-        elif battle(mob) == 0:
+        elif status == 0:
             print("You lost.")
             run()
     else:
         print("Can't do that.")
-        action()
+        travel()
         
 def stack(): ### Confusing name -- push_current_on_path_stack()
     global backstack
@@ -92,59 +91,72 @@ def action():
     print("You are currently in " + city_names[current] + ". You can go to these cities: ")
     for y in range(0,len(destinations)): ### better var than y?
         workingcity = destinations[y]
-        workingmob = edges[y]
+        workingmob = edges[y][1]
         print(city_names[workingcity] + ", but you must fight a " + workingmob["mname"] + " with " + str(workingmob["mhp"]) + " health.")
     print("You can also go BACK.")
     act = input("Where would you like to go? ")
-    return act,destinations,workingmob
+    city_number = city_names.index(act)
+    return act,destinations, [edge for edge in edges if edge[2]==city_number][0]
 
 def battle(mob):
-    print(str(mob)," check proper mob")
     global hp
-    chp = mob["mhp"]
+    chp = mob[1]["mhp"]
     turn = "P"
+    nodoubleprinthp = 0
     items = ["Big Stick", "Intercontinental Ballistic Missile", "Hyperfixation", "Job Application", "Adult Sword", "Tooth"]
     spells = ["Logical Fallacy", "Poo Tornado", "Invocation of Snuffy", "Super Death Explosion", "Summon " + random.choice(["Air", "Cat", "Death Star", "Worm", "Pizza", "Supermassive Black Hole"]), "Capitalism Blast"]
-    print("You are fighting a " + str(mob["mname"]) + " with " + str(mob["mhp"]) + " health.")
+    print("You are fighting a " + str(mob[1]["mname"]) + " with " + str(mob[1]["mhp"]) + " health.")
     print("You have " + str(hp) + " health.")
-    if mob["mhp"] <= 1:
-        print("You defeated the " + str(mob["mname"]) + " and regained 2 health.")
+    if mob[1]["mhp"] <= 1:
+        print("You defeated the " + str(mob[1]["mname"]) + " and regained 2 health.")
         hp = hp + 2
         return 1
-    elif chp > 0:
+    while chp > 0:
         if turn == "P":
             if hp <= 0:
                 print("You died.")
                 return 0
             elif chp <= 1:
-                print("You defeated the " + str(mob["mname"]) + " and regained 2 health.")
+                print("You defeated the " + str(mob[1]["mname"]) + " and regained 2 health.")
                 hp = hp + 2
                 return 1
-        else:
-            move = input("Would you like to cast a SPELL or use your sword to ATTACK? ")
-            if move == "SPELL":
-                chp == round(chp*0.5)
-                print("You cast " + random.choice[spells] + ". The " + mob["mname"] + " has " + str(chp) + " health remaining.")
-                turn = "M"
-            elif move == "ATTACK":
-                chp == chp-random.randint(0,20)
-                print("You attacked with your " + random.choice[items] + ". The " + mob["mname"] + " has " + str(chp) + " health remaining.")
-                turn =="M"
             else:
-                print("Not an option!")
-                turn = "M"
+                if nodoubleprinthp == 0:
+                    nodoubleprinthp = 1
+                else:
+                    print("You have " + str(hp) + " health.")
+                move = input("Would you like to cast a SPELL or use an item to ATTACK? ")
+                if move == "SPELL":
+                    chp = round(chp*0.5)
+                    print("You cast " + random.choice(spells) + ". The " + mob[1]["mname"] + " has " + str(chp) + " health remaining.")
+                    turn = "M"
+                    if chp <= 1:
+                        print("You defeated the " + str(mob[1]["mname"]) + " and regained 2 health.")
+                        hp = hp + 2
+                        return 1
+                elif move == "ATTACK":
+                    chp = chp-random.randint(0,20)
+                    print("You attacked with your " + random.choice(items) + ". The " + mob[1]["mname"] + " has " + str(chp) + " health remaining.")
+                    turn = "M"
+                    if chp <= 1:
+                        print("You defeated the " + str(mob[1]["mname"]) + " and regained 2 health.")
+                        hp = hp + 2
+                        return 1
+                else:
+                    print("Not an option!")
+                    turn = "M"
         if turn == "M":
-            if mob["mname"] == "Spider Teen" or mob["mname"] == "Fire Ache" or mob["mname"] == "Copromancer":
+            if mob[1]["mname"] == "Spider Teen" or mob[1]["mname"] == "Fire Ache" or mob[1]["mname"] == "Copromancer":
                 attack = 2
-            elif mob["mname"] == "Skeleton Sam" or mob["mname"] == "Mraith":
+            elif mob[1]["mname"] == "Skeleton Sam" or mob[1]["mname"] == "Mraith":
                 attack = random.randint(1,2)
-            elif mob["mname"] == "Orc Route" or mob["mname"] == "Gnat Swarm":
+            elif mob[1]["mname"] == "Orc Route" or mob[1]["mname"] == "Gnat Swarm":
                 attack = random.randint(0,2)
-            elif mob["mname"] == "Internet Troll":
+            elif mob[1]["mname"] == "Internet Troll":
                 attack = random.randint(0,1)
             else:
                 attack = 1
-            print("The " + mob["mname"] + " used " + mob["ability"] + ", dealing " + str(attack) + " damage." )
+            print("The " + mob[1]["mname"] + " used " + mob[1]["ability"] + ", dealing " + str(attack) + " damage." )
             hp = hp - attack
             turn = "P"
 
