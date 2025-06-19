@@ -1,6 +1,7 @@
 import random
 current = "null"
 targ = "null"
+hp = 10
 city_names = [
     "Youngermoore",    # 0
     "Grimehold",     # 1
@@ -13,28 +14,27 @@ city_names = [
 backstack = [] ### This name tells us nothing about its use. 
 
 map_edges = [
-    [0, {"mname": "Globlin",         "mhp": -10}, 1],
-    [0, {"mname": "Spider Teen",   "mhp": 20}, 2],
-    [1, {"mname": "Orc Route",      "mhp": 25}, 3],
-    [2, {"mname": "Mraith",         "mhp": 30}, 3],
-    [3, {"mname": "Internet Troll",   "mhp": 4000}, 4],
-    [2, {"mname": "Gnat Swarm",      "mhp": random.randint(0,100)}, 5],
-    [1, {"mname": "Fire Ache",     "mhp": 22}, 5],
-    [4, {"mname": "Copromancer",    "mhp": 50}, 6],
-    [5, {"mname": "Normal Chest",    "mhp": 1}, 4],
-    [0, {"mname": "Skeleton Sam", "mhp": random.randint(100,300)}, 5],
+    [0, {"mname": "Globlin",         "mhp": -10, "ability": ""}, 1],
+    [0, {"mname": "Spider Teen",   "mhp": 20, "ability": "Spider-Teen Web"}, 2],
+    [1, {"mname": "Orc Route",      "mhp": 25, "ability": "GPS Error"}, 3],
+    [2, {"mname": "Mraith",         "mhp": 70, "ability": "Mrath of the Mraith"}, 3],
+    [3, {"mname": "Internet Troll",   "mhp": 4000, "ability": "Nobody Asked"}, 4],
+    [2, {"mname": "Gnat Swarm",      "mhp": random.randint(0,100), "ability": "Bite"}, 5],
+    [1, {"mname": "Fire Ache",     "mhp": 52, "ability": "COX stimulation"}, 5],
+    [4, {"mname": "Copromancer",    "mhp": 150, "ability": "Poop Orb"}, 6],
+    [5, {"mname": "Normal Chest",    "mhp": 1, "ability": ""}, 4],
+    [0, {"mname": "Skeleton Sam", "mhp": random.randint(100,400), "ability": "Spooky Dance"}, 5],
     [5, {"mname": "Cute Dog",      "mhp": -20}, 6],
-    [3, {"mname": "Normal-Sized Toad",     "mhp": 23}, 5],
-    [1, {"mname": "Smog Sag",        "mhp": 3}, 6],
-    [4, {"mname": "Spectator",        "mhp": 0}, 2],
-    [6, {"mname": "Dim Paladin",   "mhp": 60}, 0]
+    [3, {"mname": "Normal-Sized Toad",     "mhp": 23, "ability": "Rather Deadly Poison"}, 5],
+    [1, {"mname": "Smog Sag",        "mhp": 3, "ability": "Big Bag"}, 6],
+    [4, {"mname": "Spectator",        "mhp": 0, "ability": ""}, 2],
+    [6, {"mname": "Dim Paladin",   "mhp": 260, "ability": "Lights Out"}, 0]
 ]
 
 
 
 def start():
-    choosestart = list(range(len(city_names))) ### This should really be list(range(len(cities)) to be more general
-    print(choosestart)
+    choosestart = list(range(len(city_names)))
     choosestart.remove(current)
     return random.choice(choosestart)
     ### BTW, this can be done with a single line in various ways -- but that's for later
@@ -55,23 +55,29 @@ def getoutgoing():
 def travel():
     ### Block comment!
     global current
-    act,destinations = action() ### take_step()? -- the naming of functions is NOT trivial -- unless you comment everywhere it's the only way you can tell what's going on!
+    act,destinations,mob = action() ### take_step()? -- the naming of functions is NOT trivial -- unless you comment everywhere it's the only way you can tell what's going on!
     if act == "BACK":
-        if len(backstack) > 0: ### Since backstack isn't a useful name, I can't even begin to guess what this is intended to do -- is backstack the path stack?
+        if len(backstack) > 0: 
             current = pops()
     elif city_names.index(act) in destinations:
-        stack()
-        current = city_names.index(act)
+        if battle(mob) == 1:
+            print("You were victorious.")
+            stack()
+            current = city_names.index(act)
+        elif battle(mob) == 0:
+            print("You lost.")
+            run()
+    else:
+        print("Can't do that.")
+        action()
         
 def stack(): ### Confusing name -- push_current_on_path_stack()
-    ### Block comment or better fn name 
     global backstack
     global current
     backstack.append(current)
     return stack
 
 def pops(): ### pop_path_stack()
-    ### Block comment or better fn name  
     global backstack
     global current
     q = backstack.pop((len(backstack)-1))
@@ -89,8 +95,58 @@ def action():
         workingmob = edges[y]
         print(city_names[workingcity] + ", but you must fight a " + workingmob["mname"] + " with " + str(workingmob["mhp"]) + " health.")
     print("You can also go BACK.")
-    act = input("Where would you like to go?")
-    return act,destinations
+    act = input("Where would you like to go? ")
+    return act,destinations,workingmob
+
+def battle(mob):
+    print(str(mob)," check proper mob")
+    global hp
+    chp = mob["mhp"]
+    turn = "P"
+    items = ["Big Stick", "Intercontinental Ballistic Missile", "Hyperfixation", "Job Application", "Adult Sword", "Tooth"]
+    spells = ["Logical Fallacy", "Poo Tornado", "Invocation of Snuffy", "Super Death Explosion", "Summon " + random.choice(["Air", "Cat", "Death Star", "Worm", "Pizza", "Supermassive Black Hole"]), "Capitalism Blast"]
+    print("You are fighting a " + str(mob["mname"]) + " with " + str(mob["mhp"]) + " health.")
+    print("You have " + str(hp) + " health.")
+    if mob["mhp"] <= 1:
+        print("You defeated the " + str(mob["mname"]) + " and regained 2 health.")
+        hp = hp + 2
+        return 1
+    elif chp > 0:
+        if turn == "P":
+            if hp <= 0:
+                print("You died.")
+                return 0
+            elif chp <= 1:
+                print("You defeated the " + str(mob["mname"]) + " and regained 2 health.")
+                hp = hp + 2
+                return 1
+        else:
+            move = input("Would you like to cast a SPELL or use your sword to ATTACK? ")
+            if move == "SPELL":
+                chp == round(chp*0.5)
+                print("You cast " + random.choice[spells] + ". The " + mob["mname"] + " has " + str(chp) + " health remaining.")
+                turn = "M"
+            elif move == "ATTACK":
+                chp == chp-random.randint(0,20)
+                print("You attacked with your " + random.choice[items] + ". The " + mob["mname"] + " has " + str(chp) + " health remaining.")
+                turn =="M"
+            else:
+                print("Not an option!")
+                turn = "M"
+        if turn == "M":
+            if mob["mname"] == "Spider Teen" or mob["mname"] == "Fire Ache" or mob["mname"] == "Copromancer":
+                attack = 2
+            elif mob["mname"] == "Skeleton Sam" or mob["mname"] == "Mraith":
+                attack = random.randint(1,2)
+            elif mob["mname"] == "Orc Route" or mob["mname"] == "Gnat Swarm":
+                attack = random.randint(0,2)
+            elif mob["mname"] == "Internet Troll":
+                attack = random.randint(0,1)
+            else:
+                attack = 1
+            print("The " + mob["mname"] + " used " + mob["ability"] + ", dealing " + str(attack) + " damage." )
+            hp = hp - attack
+            turn = "P"
 
 def run():
     global current 

@@ -4,14 +4,15 @@ low = int(input("lower?"))
 high = int(input("higher?"))
 itc = int(input("count?"))
 thresh = int(input("notability threshold?"))
+adv = int(input("lower checking bound?"))
 currant = random.randint(low,high)
 
 for k in range(0,itc):
     currant = random.randint(low,high)
     a = []
-    for x in range(2,currant):
-        for y in range(2,currant):
-            for z in range(2,currant):
+    for x in range(adv,currant):
+        for y in range(adv,currant):
+            for z in range(adv,currant):
                 if x*y == (x+y)*z:
                     a.append(y)
                     # print(str(x) + " " + str(y)+ " "+str(z))
