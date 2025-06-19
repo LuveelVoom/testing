@@ -55,10 +55,7 @@ def travel():
     ### Block comment!
     global current
     act,destinations,edge = action() ### take_step()? -- the naming of functions is NOT trivial -- unless you comment everywhere it's the only way you can tell what's going on!
-    if act == "BACK":
-        if len(backstack) > 0: 
-            current = pops()
-    elif city_names.index(act) in destinations:
+    if city_names.index(act) in destinations:
         status = battle(edge)
         if status == 1:
             stack()
@@ -84,6 +81,7 @@ def pops(): ### pop_path_stack()
     
     
 def action():
+    global current
     ### Block comment! (this one's too complex to just have the whole comment be its name)
     act = " "
     destinations,edges = getoutgoing() ### This is where (at least one of) your problem(s) is -- ask me to explain
@@ -95,8 +93,14 @@ def action():
         print(city_names[workingcity] + ", but you must fight a " + workingmob["mname"] + " with " + str(workingmob["mhp"]) + " health.")
     print("You can also go BACK.")
     act = input("Where would you like to go? ")
-    city_number = city_names.index(act)
-    return act,destinations, [edge for edge in edges if edge[2]==city_number][0]
+    if act != "BACK":
+        city_number = city_names.index(act)
+        return act,destinations,[edge for edge in edges if edge[2]==city_number][0]
+    else:
+        if len(backstack) > 0: 
+            current = pops()
+            raise Exception("back")
+
 
 def battle(mob):
     global hp
@@ -117,8 +121,8 @@ def battle(mob):
                 print("You died.")
                 return 0
             elif chp <= 1:
-                print("You defeated the " + str(mob[1]["mname"]) + " and regained 2 health.")
-                hp = hp + 2
+                print("You defeated the " + str(mob[1]["mname"]) + " and regained " + str(attack+2) + " health.")
+                hp = hp + attack + 2
                 return 1
             else:
                 if nodoubleprinthp == 0:
@@ -163,10 +167,16 @@ def battle(mob):
 def run():
     global current 
     global targ
+    global hp
+    hp = 10
     current = random.randint(0,6)
     targ = start()
     while current != targ:
-        travel()
+        try:
+            travel()
+        except Exception as e:
+            print("You lost 2 health on the way back.")
+            hp = hp - 2
     print("You were sucessful.")
 
 run()
